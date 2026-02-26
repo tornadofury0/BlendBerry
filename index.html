@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fresh Fruit Vending</title>
+  <style>
+    :root {
+      --primary: #ff7043;
+      --primary-dark: #f4511e;
+      --accent: #ffc107;
+      --bg: #fff7f0;
+      --text: #222;
+      --card-bg: #ffffff;
+      --border-radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      background: linear-gradient(145deg, #ffe0b2, #ffccbc);
+      color: var(--text);
+      padding: 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 20px 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    main {
+      padding: 20px 18px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #999;
+    }
+
+    .title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .options-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    @media (min-width: 400px) {
+      .options-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .pill-option {
+      border-radius: var(--border-radius);
+      border: 1.5px solid #eee;
+      padding: 12px 10px;
+      background: #fff;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .pill-option span.emoji {
+      font-size: 1.4rem;
+    }
+
+    .pill-option:hover {
+      border-color: var(--primary);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+      transform: translateY(-1px);
+    }
+
+    .pill-option.selected {
+      background: rgba(255, 112, 67, 0.07);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    .grid-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 4px;
+    }
+
+    .grid-label .label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .grid-label .hint {
+      font-size: 0.8rem;
+      color: #999;
+    }
+
+    .grid {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .grid button {
+      border-radius: 14px;
+      border: 1.3px solid #eee;
+      padding: 10px 8px;
+      background: #fff;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      align-items: flex-start;
+    }
+
+    .grid button .emoji {
+      font-size: 1.3rem;
+    }
+
+    .grid button .name {
+      font-weight: 600;
+    }
+
+    .grid button .note {
+      font-size: 0.75rem;
+      color: #999;
+    }
+
+    .grid button.selected {
+      background: rgba(255, 183, 77, 0.14);
+      border-color: var(--accent);
+      box-shadow: 0 7px 14px rgba(0, 0, 0, 0.04);
+      transform: translateY(-1px);
+    }
+
+    .footer-actions {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 11px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    .btn-primary {
+      flex: 1;
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(244, 81, 30, 0.35);
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 10px rgba(244, 81, 30, 0.35);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #777;
+      padding-inline: 10px;
+    }
+
+    .btn-secondary:active {
+      transform: translateY(1px);
+    }
+
+    .summary {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    .summary span {
+      font-weight: 600;
+    }
+
+    .centered {
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .loader {
+      margin: 22px auto 8px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.7);
+      border-top-color: #ffffff;
+      border-bottom-color: rgba(255, 255, 255, 0.3);
+      animation: spin 0.9s linear infinite;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.22);
+      color: #fff;
+      font-size: 0.75rem;
+      margin-top: 4px;
+    }
+
+    .chip span {
+      font-size: 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>BlendBerry</h1>
+      <p>Advanced vending for fresh, Mexican-inspired fruit.</p>
+      <div class="chip">
+        <span>🌶️</span> Spicy, sweet & fresh
+      </div>
+    </header>
+
+    <main>
+      <!-- Screen 1: Base choice -->
+      <section id="screen-1" class="screen active">
+        <div>
+          <div class="step-label">Step 1</div>
+          <div class="title">What are you craving?</div>
+          <div class="subtitle">Choose your base style.</div>
+
+          <div class="options-row">
+            <button class="pill-option base-choice" data-base="Fruit Juice">
+              <span class="emoji">🧃</span>
+              <span>Fruit Juice</span>
+            </button>
+            <button class="pill-option base-choice" data-base="Fruit Cup">
+              <span class="emoji">🥭</span>
+              <span>Fruit Cup</span>
+            </button>
+            <button class="pill-option base-choice" data-base="Smoothie">
+              <span class="emoji">🥤</span>
+              <span>Fruit Smoothie</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <button class="btn btn-primary" id="to-screen-2" disabled>
+            Next · Choose Fruits →
+          </button>
+        </div>
+      </section>
+
+      <!-- Screen 2: Fruits & add-ons -->
+      <section id="screen-2" class="screen">
+        <div>
+          <div class="step-label">Step 2</div>
+          <div class="title">Build your Mexican-inspired mix</div>
+          <div class="subtitle">
+            Tap to add as many fruits and toppings as you like.
+          </div>
+
+          <div class="summary" id="base-summary"></div>
+
+          <div class="grid-label">
+            <span class="label">Fruits</span>
+            <span class="hint">Pineapple, orange & more</span>
+          </div>
+          <div class="grid" id="fruit-grid">
+            <button data-type="fruit" data-name="Pineapple">
+              <span class="emoji">🍍</span>
+              <span class="name">Pineapple</span>
+              <span class="note">Grilled-al-pastor vibes</span>
+            </button>
+            <button data-type="fruit" data-name="Orange">
+              <span class="emoji">🍊</span>
+              <span class="name">Orange</span>
+              <span class="note">Bright & juicy</span>
+            </button>
+            <button data-type="fruit" data-name="Mango">
+              <span class="emoji">🥭</span>
+              <span class="name">Mango</span>
+              <span class="note">Street-cart classic</span>
+            </button>
+            <button data-type="fruit" data-name="Watermelon">
+              <span class="emoji">🍉</span>
+              <span class="name">Watermelon</span>
+              <span class="note">Perfect with lime & chili</span>
+            </button>
+            <button data-type="fruit" data-name="Cucumber">
+              <span class="emoji">🥒</span>
+              <span class="name">Cucumber</span>
+              <span class="note">Cool & crunchy</span>
+            </button>
+            <button data-type="fruit" data-name="Jícama">
+              <span class="emoji">🥕</span>
+              <span class="name">Jícama</span>
+              <span class="note">Crisp, lightly sweet</span>
+            </button>
+          </div>
+
+          <div class="grid-label" style="margin-top:14px;">
+            <span class="label">Add-ons</span>
+            <span class="hint">Tap to spice it up</span>
+          </div>
+          <div class="grid" id="addon-grid">
+            <button data-type="addon" data-name="Tajín">
+              <span class="emoji">🌶️</span>
+              <span class="name">Tajín</span>
+              <span class="note">Chili-lime seasoning</span>
+            </button>
+            <button data-type="addon" data-name="Chia Seeds">
+              <span class="emoji">🫘</span>
+              <span class="name">Chia Seeds</span>
+              <span class="note">Extra fiber & texture</span>
+            </button>
+            <button data-type="addon" data-name="Chamoy Drizzle">
+              <span class="emoji">🧴</span>
+              <span class="name">Chamoy Drizzle</span>
+              <span class="note">Sweet, sour & spicy</span>
+            </button>
+            <button data-type="addon" data-name="Fresh Lime">
+              <span class="emoji">🍋</span>
+              <span class="name">Fresh Lime</span>
+              <span class="note">Zesty squeeze on top</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <button class="btn btn-secondary" id="back-to-1">← Back</button>
+          <button class="btn btn-primary" id="confirm-order">
+            Confirm · Prepare Order
+          </button>
+        </div>
+      </section>
+
+      <!-- Screen 3: Preparing order -->
+      <section id="screen-3" class="screen">
+        <div class="centered">
+          <div class="step-label">Step 3</div>
+          <div class="title">Preparing your order</div>
+          <div class="subtitle">
+            Your advanced vending machine is crafting:
+          </div>
+
+          <div class="summary" id="final-summary"></div>
+
+          <div class="loader"></div>
+          <div class="subtitle" style="margin-top:4px;">
+            Infusing fresh fruit, spice, and chill. Please wait…
+          </div>
+        </div>
+
+        <div class="footer-actions" style="justify-content:center; margin-top:26px;">
+          <button class="btn btn-secondary" id="start-over">
+            Start another order
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const screens = {
+      1: document.getElementById("screen-1"),
+      2: document.getElementById("screen-2"),
+      3: document.getElementById("screen-3"),
+    };
+
+    const state = {
+      base: null,
+      selections: [],
+    };
+
+    function showScreen(num) {
+      Object.values(screens).forEach((s) => s.classList.remove("active"));
+      screens[num].classList.add("active");
+    }
+
+    // Screen 1: base choice
+    const baseButtons = document.querySelectorAll(".base-choice");
+    const toScreen2Btn = document.getElementById("to-screen-2");
+    const baseSummary = document.getElementById("base-summary");
+
+    baseButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        baseButtons.forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        state.base = btn.dataset.base;
+        toScreen2Btn.disabled = false;
+      });
+    });
+
+    toScreen2Btn.addEventListener("click", () => {
+      if (!state.base) return;
+      baseSummary.innerHTML =
+        'Base: <span>' + state.base + "</span>. Now add fruits & toppings.";
+      showScreen(2);
+    });
+
+    // Screen 2: fruit & add-ons
+    function toggleSelection(button) {
+      const name = button.dataset.name;
+      const existsIndex = state.selections.indexOf(name);
+
+      if (existsIndex >= 0) {
+        state.selections.splice(existsIndex, 1);
+        button.classList.remove("selected");
+      } else {
+        state.selections.push(name);
+        button.classList.add("selected");
+      }
+    }
+
+    document
+      .querySelectorAll("#fruit-grid button, #addon-grid button")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => toggleSelection(btn));
+      });
+
+    document.getElementById("back-to-1").addEventListener("click", () => {
+      showScreen(1);
+    });
+
+    // Confirm & show final screen
+    const confirmBtn = document.getElementById("confirm-order");
+    const finalSummary = document.getElementById("final-summary");
+
+    confirmBtn.addEventListener("click", () => {
+      const base = state.base || "Custom Base";
+      const items =
+        state.selections.length > 0
+          ? state.selections.join(", ")
+          : "Just keep it classic, no add-ons";
+
+      finalSummary.innerHTML =
+        '<span>' +
+        base +
+        "</span> with:<br>" +
+        items;
+
+      showScreen(3);
+    });
+
+    // Start over
+    document.getElementById("start-over").addEventListener("click", () => {
+      // Reset state
+      state.base = null;
+      state.selections = [];
+      baseButtons.forEach((b) => b.classList.remove("selected"));
+      document
+        .querySelectorAll("#fruit-grid button, #addon-grid button")
+        .forEach((b) => b.classList.remove("selected"));
+      toScreen2Btn.disabled = true;
+      finalSummary.textContent = "";
+      baseSummary.textContent = "";
+      showScreen(1);
+    });
+  </script>
+</body>
+</html>
